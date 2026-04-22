@@ -40,9 +40,13 @@
                     <li class="nav-item d-none d-lg-block mx-2 text-secondary">|</li>
 
                     <li class="nav-item">
-                        <a class="btn btn-danger btn-sm px-3 rounded-pill fw-bold" href="/">
-                            <i class="fas fa-sign-out-alt me-1"></i> Logout
-                        </a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="btn btn-danger btn-sm px-3 rounded-pill fw-bold">
+                                Logout
+                            </button>
+                        </form>
+
                     </li>
                 </ul>
             </div>
