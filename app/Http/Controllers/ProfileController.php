@@ -57,4 +57,34 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+    
+    public function uploadFoto(Request $request): RedirectResponse
+    {
+        $request->validate([
+        'foto' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
+
+    $user     = $request->user();
+    $file     = $request->file('foto');
+    $filename = time() . '_' . str_replace(' ', '_', $file->getClientOriginalName());
+    $path     = $file->storeAs('foto-profil', $filename, 'public');
+
+    if ($user->foto && $user->foto !== 'default.png') {
+        \Illuminate\Support\Facades\Storage::disk('public')->delete($user->foto);
+    }
+
+     // Debug — pastikan path tersimpan
+    \Illuminate\Support\Facades\DB::table('users')
+        ->where('id', $user->id)
+        ->update(['foto' => $path]);
+
+    Auth::setUser($user->fresh());
+
+    $user->foto = $path;
+    $user->save();
+
+    return Redirect::route('dashboard')
+        ->with('status', 'foto-updated');
+    
+    }
 }

@@ -12,7 +12,7 @@
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.css" />
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -35,6 +35,30 @@
             {{ $slot }}
         </main>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.umd.js"></script>
+    <script>
+    Fancybox.bind("[data-fancybox]", {
+        Images: {
+            Panzoom: {
+                maxScale: 3,
+            },
+        },
+        dragToClose: true,
+        Toolbar: {
+            display: {
+                left: ["infobar"],
+                middle: [],
+                right: ["iterateZoom", "download", "fullscreen", "close"],
+            },
+        },
+        showClass: "f-zoomInUp",
+        hideClass: "f-fadeOut",
+        // Menutup Fancybox jika area di luar gambar diklik
+        Click: {
+            backdrop: "close",
+        },
+    });
+    </script>
 </body>
 
 </html>
