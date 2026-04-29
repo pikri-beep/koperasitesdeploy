@@ -6,20 +6,17 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('tbmodals', function (Blueprint $table) {
             $table->id();
+            $table->bigInteger('simpanan_pokok')->default(0); 
+            $table->bigInteger('simpanan_wajib')->default(0);
+            $table->bigInteger('simpanan_sementara')->default(0);
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tbmodals');

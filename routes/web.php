@@ -1,29 +1,54 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TbpinjamanController;
+use App\Http\Controllers\TbmodalController;
 use Illuminate\Support\Facades\Route;
 use App\Models\User;
 use Illuminate\Http\Request;
 
-// 1. Landing Page (Tampilan Umum Kelompok 2)
+/*
+|--------------------------------------------------------------------------
+| 1. LANDING PAGE
+|--------------------------------------------------------------------------
+*/
 Route::get('/', function () {
     return view('dashboard.indexumum');
 });
 
-// 2. Grup Rute untuk Dashboard Anggota (User Biasa)
+
+/*
+|--------------------------------------------------------------------------
+| 2. DASHBOARD USER
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:user'])->group(function () {
-    
-    // Halaman Utama Dashboard User
+
+    // Dashboard utama user
     Route::get('/dashboard', function () {
-        return view('dashboard.index'); 
+        return view('dashboard.index');
     })->name('dashboard');
 
-    // Sub-menu Kelompok 2
+    // Prefix dashboard/*
     Route::prefix('dashboard')->group(function () {
-        Route::get('/modal', function () {
-            return view('dashboard.modal');
-        })->name('modal');
 
+        /*
+        |--------------------------------------------------------------------------
+        | MODAL (FIX: pakai controller)
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/modal', [TbmodalController::class, 'index'])->name('modal');
+
+        Route::post('/modal', [TbmodalController::class, 'store'])->name('modal.store');
+        Route::put('/modal/{id}', [TbmodalController::class, 'update'])->name('modal.update');
+        Route::delete('/modal/{id}', [TbmodalController::class, 'destroy'])->name('modal.destroy');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | MENU LAIN
+        |--------------------------------------------------------------------------
+        */
         Route::get('/penarikan', function () {
             return view('dashboard.penarikan');
         })->name('penarikan');
@@ -31,20 +56,37 @@ Route::middleware(['auth', 'role:user'])->group(function () {
         Route::get('/cicilan', function () {
             return view('dashboard.cicilan');
         })->name('cicilan');
-        
-        Route::get('/pinjaman', function () {
-            return view('dashboard.pinjaman');
-        })->name('pinjaman');
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | PINJAMAN
+        |--------------------------------------------------------------------------
+        */
+        Route::get('/pinjaman', [TbpinjamanController::class, 'dashboard'])->name('pinjaman');
+
+        Route::get('/pinjaman/{id}/edit', [TbpinjamanController::class, 'edit'])->name('pinjaman.edit');
+        Route::put('/pinjaman/{id}', [TbpinjamanController::class, 'update'])->name('pinjaman.update');
+        Route::delete('/pinjaman/{id}', [TbpinjamanController::class, 'destroy'])->name('pinjaman.destroy');
+
+        Route::get('/pinjaman/riwayat', [TbpinjamanController::class, 'index'])->name('pinjaman.riwayat');
+        Route::get('/pinjaman/pengajuan', [TbpinjamanController::class, 'create'])->name('pinjaman.pengajuan');
+        Route::post('/pinjaman', [TbpinjamanController::class, 'store'])->name('pinjaman.store');
     });
 });
 
-// 3. Grup Rute untuk Admin (Tugas Kelompok 3)
+
+/*
+|--------------------------------------------------------------------------
+| 3. DASHBOARD ADMIN
+|--------------------------------------------------------------------------
+*/
 Route::middleware(['auth', 'role:admin'])->group(function () {
-    
+
     Route::get('/admin/dashboard', function (Request $request) {
+
         $search = $request->input('search');
 
-        // Mengambil data dengan pencarian dan pagination (10 data per halaman)
         $users = User::when($search, function ($query, $search) {
                 return $query->where('name', 'like', "%{$search}%")
                              ->orWhere('email', 'like', "%{$search}%");
@@ -57,10 +99,13 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
             'totalAnggota' => User::where('role', 'user')->count(),
             'totalAdmin' => User::where('role', 'admin')->count()
         ]);
+
     })->name('admin.dashboard');
 
-    // Fitur Ganti Role (Ditingkatkan dengan trim untuk mencegah error "enter")
+
+    // Update role
     Route::patch('/admin/users/{user}/role', function (Request $request, User $user) {
+
         if ($user->id == 1) {
             return back()->with('error', 'Super Admin tidak bisa diubah!');
         }
@@ -72,23 +117,37 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return back()->with('status', 'Role berhasil diperbarui!');
     })->name('admin.users.updateRole');
 
-    // Fitur Hapus User
+
+    // Hapus user
     Route::delete('/admin/users/{user}', function (User $user) {
+
         if ($user->id == auth()->id() || $user->id == 1) {
             return back()->with('error', 'Tidak bisa menghapus akun utama atau diri sendiri!');
         }
-        
+
         $user->delete();
+
         return back()->with('status', 'Anggota berhasil dihapus!');
     })->name('admin.users.destroy');
 });
 
-// 4. Rute Profil Bawaan Breeze
+
+/*
+|--------------------------------------------------------------------------
+| 4. PROFILE (BREEZE)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-    Route::post('/profile/upload-foto', [ProfileController::class, 'uploadFoto'])->name('profile.uploadFoto');
+
+    Route::post('/profile/upload-foto', [ProfileController::class, 'uploadFoto'])
+        ->name('profile.uploadFoto');
 });
+
 
 require __DIR__.'/auth.php';

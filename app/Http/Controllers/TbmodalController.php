@@ -2,64 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\tbmodal;
 use Illuminate\Http\Request;
+use App\Models\TbModal;
 
 class TbmodalController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $data = TbModal::latest()->get();
+        return view('dashboard.modal', compact('data'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        //
+        TbModal::create([
+            'simpanan_pokok' => $request->simpanan_pokok ?? 0,
+            'simpanan_wajib' => $request->simpanan_wajib ?? 0,
+            'simpanan_sementara' => $request->simpanan_sementara ?? 0,
+        ]);
+
+        return redirect()->back()->with('success', 'Data berhasil ditambahkan!');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(tbmodal $tbmodal)
+    public function update(Request $request, $id)
     {
-        //
+        $data = TbModal::findOrFail($id);
+
+        $data->update([
+            'simpanan_pokok' => $request->simpanan_pokok,
+            'simpanan_wajib' => $request->simpanan_wajib,
+            'simpanan_sementara' => $request->simpanan_sementara,
+        ]);
+
+        return redirect()->back()->with('success', 'Data berhasil diupdate!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(tbmodal $tbmodal)
+    public function destroy($id)
     {
-        //
-    }
+        TbModal::findOrFail($id)->delete();
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, tbmodal $tbmodal)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(tbmodal $tbmodal)
-    {
-        //
+        return redirect()->back()->with('success', 'Data berhasil dihapus!');
     }
 }
